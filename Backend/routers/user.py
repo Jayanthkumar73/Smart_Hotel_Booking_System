@@ -14,8 +14,6 @@ from auth import create_access_token # Function to generate JWT token after logi
 # passlib is used to hash passwords securely before saving to DB
 # CryptContext sets up the hashing algorithm.
 from passlib.context import CryptContext
-
-
 # ==================== SETUP ====================
 
 # Creates a router object — all routes defined here will be grouped under this router
@@ -25,7 +23,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # Use Argon2 as the primary hasher.
 # Keep bcrypt for backward compatibility so existing users can still log in.
-pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 # ==================== HELPER FUNCTIONS ====================
