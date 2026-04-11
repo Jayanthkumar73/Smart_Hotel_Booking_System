@@ -12,14 +12,13 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "your_password")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_NAME = os.getenv("DB_NAME", "hotel_booking_system")
 
+
 # Correct DATABASE URL
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}?charset=utf8mb4"
 
 # Create engine (ONLY ONCE)
 engine = create_engine(
-    DATABASE_URL,
-    connect_args={"ssl": {"fake_flag_to_enable_tls": True}}
-)
+    DATABASE_URL)
 
 # Session
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
@@ -34,3 +33,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+
+
+
+
+

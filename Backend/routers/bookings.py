@@ -181,3 +181,34 @@ def get_payment_status(
         raise HTTPException(status_code=404, detail="Payment not found")
 
     return payment
+
+
+from sqlalchemy import text
+
+# ==================== BOOK ROOM USING STORED PROCEDURE ====================
+
+@router.post("/book-room-proc")
+def book_room_proc(
+    room_id: int,
+    check_in: str,
+    check_out: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    try:
+        query = text("CALL book_room(:user_id, :room_id, :check_in, :check_out)")
+        
+        db.execute(query, {
+            "user_id": current_user.user_id,
+            "room_id": room_id,
+            "check_in": check_in,
+            "check_out": check_out
+        })
+
+        db.commit()
+
+        return {"message": "Booking successful via stored procedure"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
