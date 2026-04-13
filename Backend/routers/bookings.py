@@ -90,13 +90,25 @@ def get_my_bookings(
             if hotel:
                 hotel_name = hotel.name
 
+        # Fetch payment info for this booking
+        payment = db.query(models.Payment).filter(
+            models.Payment.booking_id == booking.booking_id
+        ).first()
+
+        payment_info = {
+            "payment_id": payment.payment_id if payment else None,
+            "amount": float(payment.amount) if payment else 0,
+            "status": payment.status if payment else "PENDING"
+        } if payment else {"payment_id": None, "amount": 0, "status": "PENDING"}
+
         result.append({
             "booking_id": booking.booking_id,
             "room_id": booking.room_id,
             "hotel_name": hotel_name,
             "check_in": booking.check_in,
             "check_out": booking.check_out,
-            "status": booking.status
+            "status": booking.status,
+            "payment": payment_info
         })
 
     return result
@@ -206,6 +218,34 @@ def book_room_proc(
         })
 
         db.commit()
+
+        # Fetch the created booking to get booking_id
+        booking = db.query(models.Bookings).filter(
+            models.Bookings.user_id == current_user.user_id,
+            models.Bookings.room_id == room_id,
+            models.Bookings.check_in == check_in,
+            models.Bookings.check_out == check_out
+        ).order_by(models.Bookings.booking_id.desc()).first()
+
+        if booking:
+            # Fetch room to get price for payment calculation
+            room = db.query(models.Room).filter(models.Room.room_id == room_id).first()
+            
+            if room:
+                from datetime import datetime
+                check_in_date = datetime.strptime(check_in, "%Y-%m-%d").date()
+                check_out_date = datetime.strptime(check_out, "%Y-%m-%d").date()
+                nights = (check_out_date - check_in_date).days
+                total_amount = nights * float(room.price)
+
+                # Create payment for this booking
+                new_payment = models.Payment(
+                    booking_id=booking.booking_id,
+                    amount=total_amount,
+                    status="SUCCESS"
+                )
+                db.add(new_payment)
+                db.commit()
 
         return {"message": "Booking successful via stored procedure"}
 
