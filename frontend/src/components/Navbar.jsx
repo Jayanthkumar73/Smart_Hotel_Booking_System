@@ -4,9 +4,11 @@ function Navbar() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     navigate("/");
   };
 
@@ -14,13 +16,22 @@ function Navbar() {
 
   return (
     <div style={styles.navbar}>
-      <h2 style={styles.logo} onClick={() => navigate("/hotels")}>
+      <h2
+        style={styles.logo}
+        onClick={() => navigate(role === "admin" ? "/admin" : "/hotels")}
+      >
         🏨 HotelBooking
       </h2>
 
       <div style={styles.links}>
-        <span onClick={() => navigate("/hotels")}>Hotels</span>
-        <span onClick={() => navigate("/history")}>History</span>
+        {role === "admin" ? (
+          <span onClick={() => navigate("/admin")}>Admin Dashboard</span>
+        ) : (
+          <>
+            <span onClick={() => navigate("/hotels")}>Hotels</span>
+            <span onClick={() => navigate("/history")}>History</span>
+          </>
+        )}
         
 
         <button onClick={handleLogout} style={styles.logout}>

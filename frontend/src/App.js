@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Admin from "./pages/Admin";
 import Hotels from "./pages/Hotels";
 import Rooms from "./pages/Rooms";
 import Booking from "./pages/Booking";
@@ -23,9 +24,19 @@ function App() {
 
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Login />} />
+        <Route path="/admin-login" element={<Login isAdminLogin />} />
         <Route path="/register" element={<Register />} />
 
         {/* PROTECTED ROUTES */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requireAdmin>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/hotels"
           element={

@@ -1,103 +1,55 @@
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-
-// function Login() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const navigate = useNavigate();
-
-//   const handleLogin = () => {
-//     console.log(email, password);
-//     navigate("/hotels");
-//   };
-
-//   return (
-//     <div style={{ textAlign: "center", marginTop: "100px" }}>
-//       <h2>Login</h2>
-
-//       <div>
-//         <input
-//           placeholder="Email"
-//           onChange={(e) => setEmail(e.target.value)}
-//         />
-//       </div>
-
-//       <div>
-//         <input
-//           type="password"
-//           placeholder="Password"
-//           onChange={(e) => setPassword(e.target.value)}
-//         />
-//       </div>
-
-//       <button onClick={handleLogin}>Login</button>
-//     </div>
-//   );
-// }
-
-// export default Login;
-
-
-
-
-
-
-
-
-
-
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api"; 
+import api from "../services/api";
 
-
-function Login() {
+function Login({ isAdminLogin = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
- 
+  const handleLogin = async () => {
+    const isAdminCredentials =
+      email.trim().toLowerCase() === "admin@gmail.com" && password === "admin";
 
+    try {
+      if (isAdminCredentials) {
+        localStorage.setItem("token", "admin-token");
+        localStorage.setItem("role", "admin");
+        alert("Admin login successful!");
+        navigate("/admin");
+        return;
+      }
 
+      if (isAdminLogin) {
+        alert("Invalid admin credentials");
+        return;
+      }
 
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
+      localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("role", "user");
 
-
-
-const handleLogin = async () => {
-  try {
-    const res = await api.post("/auth/login", {
-      email,
-      password,
-    });
-
-    console.log("LOGIN RESPONSE:", res.data);
-
-    // ✅ SAVE TOKEN (MOST IMPORTANT FIX)
-    localStorage.setItem("token", res.data.access_token);
-
-    alert("Login successful!");
-
-    navigate("/hotels");
-
-  } catch (err) {
-    console.log(err);
-    alert("Login failed");
-  }
-};
-
-
-
-
-
-
+      alert("Login successful!");
+      navigate("/hotels");
+    } catch (err) {
+      console.log(err);
+      alert("Login failed");
+    }
+  };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>Welcome Back 👋</h2>
-        <p style={styles.subtitle}>Login to continue booking hotels</p>
+        <h2 style={styles.title}>{isAdminLogin ? "Admin Login 👑" : "Welcome Back 👋"}</h2>
+        <p style={styles.subtitle}>
+          {isAdminLogin
+            ? "Login with admin credentials to open the admin dashboard"
+            : "Login to continue booking hotels"}
+        </p>
 
         <input
           style={styles.input}
@@ -120,11 +72,15 @@ const handleLogin = async () => {
 
         <p style={styles.footerText}>
           Don’t have an account?{" "}
-          <span
-            style={styles.link}
-            onClick={() => navigate("/register")}
-          >
+          <span style={styles.link} onClick={() => navigate("/register")}>
             Register
+          </span>
+        </p>
+
+        <p style={styles.footerText}>
+          Are you admin?{" "}
+          <span style={styles.link} onClick={() => navigate("/admin-login")}>
+            Admin Login
           </span>
         </p>
       </div>
