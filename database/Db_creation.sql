@@ -290,3 +290,59 @@ INSERT INTO bookings(user_id, room_id, check_in, check_out, status)
 VALUES (2, 2, '2026-06-01', '2026-06-03', 'CONFIRMED');
 
 SELECT * FROM rooms WHERE room_id = 2;
+
+
+ 
+DELIMITER //
+ 
+CREATE PROCEDURE book_room(
+    IN p_user_id INT,
+    IN p_room_id INT,
+    IN p_check_in DATE,
+    IN p_check_out DATE
+)
+BEGIN
+    DECLARE room_available BOOLEAN;
+ 
+    START TRANSACTION;
+ 
+    -- Check room availability
+    SELECT available INTO room_available
+    FROM rooms
+    WHERE room_id = p_room_id
+    FOR UPDATE;
+ 
+    IF room_available = TRUE THEN
+ 
+        -- Insert booking
+        INSERT INTO bookings(user_id, room_id, check_in, check_out, status)
+        VALUES (p_user_id, p_room_id, p_check_in, p_check_out, 'CONFIRMED');
+ 
+        -- Update room availability
+        UPDATE rooms
+        SET available = FALSE
+        WHERE room_id = p_room_id;
+ 
+        COMMIT;
+ 
+    ELSE
+        ROLLBACK;
+    END IF;
+ 
+END //
+ 
+DELIMITER ;
+ 
+ 
+ 
+CALL book_room(1, 1, '2026-05-01', '2026-05-03');
+ 
+ 
+SELECT * FROM bookings ORDER BY booking_id DESC;
+ 
+SELECT * FROM rooms WHERE room_id = 1;
+ 
+ 
+CALL book_room(2, 1, '2026-05-05', '2026-05-07');
+ 
+ 
