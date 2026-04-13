@@ -235,8 +235,16 @@ function Admin() {
   const deleteHotel = async (id) => {
     if (window.confirm("Are you sure?")) {
       try {
+        const relatedRooms = rooms.filter((room) => room.hotel_id === id);
+        if (relatedRooms.length > 0) {
+          await Promise.all(
+            relatedRooms.map((room) => api.delete(`/admin/rooms/${room.room_id}`))
+          );
+        }
+
         await api.delete(`/admin/hotels/${id}`);
         setHotels((prev) => prev.filter((h) => h.hotel_id !== id));
+        setRooms((prev) => prev.filter((room) => room.hotel_id !== id));
         alert("Hotel deleted successfully!");
       } catch (err) {
         console.log("Delete hotel error:", err);
