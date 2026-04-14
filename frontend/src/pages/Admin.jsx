@@ -146,7 +146,7 @@
 
 
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../services/api";
 
 function Admin() {
@@ -170,33 +170,33 @@ function Admin() {
     capacity: "",
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    await Promise.all([fetchHotels(), fetchRooms()]);
-    setLoading(false);
-  };
-
-  const fetchHotels = async () => {
+  const fetchHotels = useCallback(async () => {
     try {
       const res = await api.get("/admin/hotels");
       setHotels(res.data);
     } catch (err) {
       console.log("Hotels error:", err);
     }
-  };
+  }, []);
 
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
       const res = await api.get("/admin/rooms");
       setRooms(res.data);
     } catch (err) {
       console.log("Rooms error:", err);
     }
-  };
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([fetchHotels(), fetchRooms()]);
+    setLoading(false);
+  }, [fetchHotels, fetchRooms]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleAddHotel = () => {
     setEditingHotel(null);

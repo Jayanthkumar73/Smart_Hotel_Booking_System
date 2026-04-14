@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
@@ -7,18 +7,18 @@ function Rooms() {
   const [rooms, setRooms] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchRooms();
-  }, [hotelId]);
-
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
       const res = await api.get(`/rooms/${hotelId}/all`);
       setRooms(res.data);
     } catch (err) {
       console.log("Error fetching rooms:", err.response?.data || err.message);
     }
-  };
+  }, [hotelId]);
+
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
 
   return (
     <div style={styles.container}>

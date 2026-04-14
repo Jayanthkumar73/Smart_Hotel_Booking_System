@@ -170,12 +170,6 @@ function Hotels() {
     fetchHotels();
   };
 
-  // 🚪 LOGOUT
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
   return (
     <div style={styles.container}>
       
